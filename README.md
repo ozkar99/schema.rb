@@ -2,11 +2,12 @@
 Simple migration tool, only works for mysql/mariadb.
 
 ### Usage:
-- Clone this repo to your target.
-- Fill `config.json` with the database credentials.
+- clone this repo to your target.
+- fill `config.json` with the database credentials.
 - `./schema.rb create`: Initializes the database, creates `_migrations` table.
 - `./schema.rb migrate`: Updates database to latest migration.
 - `./schema.rb add <migrationname>`: creates new migration file on `migrations/`
+- migrations are plain `.sql` files, theres no rollback of any kind.
 
 ### Grant access to a new user for running the tool:
 - `mysql -u root -p`

@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+require 'benchmark'
 
 require_relative 'lib/config'
 require_relative 'lib/options'
@@ -9,5 +10,9 @@ opts = Options.parse ARGV
 conf = Config.read 'config.json'
 
 # Execute command
-cmd = Command.new opts, conf
-cmd.exec
+time = Benchmark.measure do
+  cmd = Command.new opts, conf
+  cmd.exec
+end
+
+p "Finished Command, time: #{time.real}"
