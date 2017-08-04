@@ -15,3 +15,6 @@ Simple migration tool, only works for mysql/mariadb.
 - `GRANT ALL PRIVILEGES ON sample_database.* TO 'newuser'@'%';`
 
 Make sure to change `newuser` and `sample_database` to your desired user and database name.
+
+### Gotchas
+- DDL statements cannot be rolledback, keep that in mind.

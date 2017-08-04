@@ -1,5 +1,6 @@
 require 'mysql2'
 require_relative 'strings_patch'
+require_relative 'mysql2_patch'
 
 module Schema
     class Command
@@ -25,7 +26,7 @@ module Schema
 
         private
         def initialize_sql_client
-            @sql_client = Mysql2::Client.new username: @user, password: @pass, port: @port, host: @host # no database specified
+            @sql_client = Mysql2::Client.new username: @user, password: @pass, port: @port, host: @host, flags: Mysql2::Client::MULTI_STATEMENTS # no database specified
             @database = @sql_client.escape @database
         end
 
@@ -84,14 +85,17 @@ module Schema
 
             # iterate the migration files
             migrations.sort.each do |migration|
-                
-                # execute sql
-                sql = File.read "migrations/#{migration}.sql"
-                @sql_client.query sql
-                
-                # add entry to _migrations table
+
                 base_name = @sql_client.escape migration.base_name
-                @sql_client.query "INSERT INTO _migrations (Migration) VALUES ('#{base_name}');"
+                sql = File.read "migrations/#{migration}.sql"
+
+                @sql_client.transaction do 
+                    @sql_client.query sql # execute sql file
+
+                    @sql_client.abandon_results! # clean buffer (needed for multi-statements)
+                    @sql_client.query "INSERT INTO _migrations (Migration) VALUES ('#{base_name}');" # add entry to _migrations
+                    @sql_client.abandon_results!
+                end
 
                 p "Executed Migration #{base_name}"
             end
