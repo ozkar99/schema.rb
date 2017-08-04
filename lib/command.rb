@@ -35,7 +35,7 @@ module Schema
             
             p "Creating _migrations table (if not exists)"
             @sql_client.query "USE #{@database};"
-            @sql_client.query "CREATE TABLE IF NOT EXISTS _migrations (ID INT NOT NULL, Migration VARCHAR(120), Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (ID));"
+            @sql_client.query "CREATE TABLE IF NOT EXISTS _migrations (ID INT NOT NULL AUTO_INCREMENT, Migration VARCHAR(120), Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (ID));"
         end
 
         def run_add
@@ -55,24 +55,46 @@ module Schema
         def run_migrate
             p "Running migrations"
 
+            # check if database exists
             results = @sql_client.query "SHOW DATABASES LIKE '#{@database}';"
             unless results.any?
                 p "Database has not been created please run 'create' command first to create database."
                 return
             end
 
+            # check if _migrations table exists
             @sql_client.query "USE #{@database};"
             result = @sql_client.query "SHOW TABLES LIKE '_migrations';"
             unless result.any?
                 p "Database has not been initialized please run 'create' command first to add _migrations table."
                 return
             end
-                    
-            # get latest migration from db
-            # get files not yet migrated        
-            # iterate and execute files
-            # add entry in _migrations for each executed file migration.base_name
-            # p "Executed Migration #{migration}"
+            
+            # get all migrations
+            migrations = Dir.glob "migrations/*.sql"
+            migrations = migrations.map { |m| m.base_name } # remove path and extension
+
+            # if there are migrations only get the ones that hasnt been applied yet.
+            last_migration = @sql_client.query "SELECT Migration FROM _migrations ORDER BY Timestamp DESC;"
+            if last_migration.any?
+                last_migration = last_migration.first["Migration"]
+                migrations = migrations.drop_while { |m| m != last_migration} # drops till last_migration
+                migrations.shift # removes last_migration element
+            end
+
+            # iterate the migration files
+            migrations.sort.each do |migration|
+                
+                # execute sql
+                sql = File.read "migrations/#{migration}.sql"
+                @sql_client.query sql
+                
+                # add entry to _migrations table
+                base_name = @sql_client.escape migration.base_name
+                @sql_client.query "INSERT INTO _migrations (Migration) VALUES ('#{base_name}');"
+
+                p "Executed Migration #{base_name}"
+            end
         end
     end
 end

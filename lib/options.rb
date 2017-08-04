@@ -17,9 +17,9 @@ module Schema
                 end
             else
                 printf %{Usage:
-    ./schema.rb create -- initializes database
-    ./schema.rb migrate -- migrates database to latest version
-    ./schema.rb add <name> -- creates migration file}
+schema.rb create -- initializes database
+schema.rb migrate -- migrates database to latest version
+schema.rb add <name> -- creates migration file }
                 exit
             end
             options
