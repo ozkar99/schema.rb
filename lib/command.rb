@@ -76,7 +76,7 @@ module Schema
             migrations = migrations.map { |m| m.base_name } # remove path and extension
 
             # if there are migrations only get the ones that hasnt been applied yet.
-            last_migration = @sql_client.query "SELECT Migration FROM _migrations ORDER BY Timestamp DESC;"
+            last_migration = @sql_client.query "SELECT Migration FROM _migrations ORDER BY Timestamp,Migration DESC;"
             if last_migration.any?
                 last_migration = last_migration.first["Migration"]
                 migrations = migrations.drop_while { |m| m != last_migration} # drops till last_migration
