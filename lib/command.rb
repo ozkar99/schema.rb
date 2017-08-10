@@ -36,7 +36,7 @@ module Schema
             
             p "Creating _migrations table (if not exists)"
             @sql_client.query "USE #{@database};"
-            @sql_client.query "CREATE TABLE IF NOT EXISTS _migrations (ID INT NOT NULL AUTO_INCREMENT, Migration VARCHAR(120), Timestamp TIMESTAMP(4) DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (ID));"
+            @sql_client.query "CREATE TABLE IF NOT EXISTS _migrations (ID INT NOT NULL AUTO_INCREMENT, Migration VARCHAR(120), Timestamp TIMESTAMP(4) DEFAULT CURRENT_TIMESTAMP(4), PRIMARY KEY (ID));"
         end
 
         def run_add
